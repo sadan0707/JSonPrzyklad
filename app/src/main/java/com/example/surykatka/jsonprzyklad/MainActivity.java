@@ -1,6 +1,7 @@
 package com.example.surykatka.jsonprzyklad;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,16 +15,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_main);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-            Button przycisk_wyswietl = (Button) findViewById(R.id.przycisk_wyswietl);
+        Button przycisk_wyswietl = (Button) findViewById(R.id.przycisk_wyswietl);
 
-        }
+    }
 
 
     public void Przycisk_Wyswietl(View view) {
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         BufferedReader czytnik_strumienia = null;
 
         try {
-            URL adres_url = new URL("tu wpisz adres URL");
+            URL adres_url = new URL("http://localhost/mojFolder/mojPlik.txt");
             polaczenie = (HttpURLConnection) adres_url.openConnection();
             polaczenie.connect();
 
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 bufor.append(linijka);
             }
 
-            text_wyswietl.setText("Wyświtlana zawartość to: "+bufor.toString());
+            text_wyswietl.setText("Wyświtlana zawartość to: " + bufor.toString());
 
 
         } catch (MalformedURLException e) {
@@ -59,10 +60,10 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
 
         } finally {
-            if(polaczenie!=null) {
+            if (polaczenie != null) {
                 polaczenie.disconnect();
             }
-            if(czytnik_strumienia!=null) {
+            if (czytnik_strumienia != null) {
                 try {
                     czytnik_strumienia.close();
                 } catch (IOException e) {
@@ -72,5 +73,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
+    public class JSONTask extends AsyncTask<URL, String, StringBuffer> {
+
+        @Override
+        protected StringBuffer doInBackground(URL... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(StringBuffer stringBuffer) {
+            super.onPostExecute(stringBuffer);
+        }
     }
+}
+
+
 
