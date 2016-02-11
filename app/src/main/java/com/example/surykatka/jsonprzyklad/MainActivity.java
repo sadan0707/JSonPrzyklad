@@ -17,74 +17,83 @@ import java.net.URL;
 
 public class MainActivity extends Activity {
 
+    private TextView text_wyswietl;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Button przycisk_wyswietl = (Button) findViewById(R.id.przycisk_wyswietl);
+        text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
 
     }
 
 
     public void Przycisk_Wyswietl(View view) {
 
-        TextView text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
-        //text_wyswietl.setText("Wyświtlana zawartość to: ");
 
-        HttpURLConnection polaczenie = null;
-        BufferedReader czytnik_strumienia = null;
+        new JSONTask().execute("http://10.0.2.15:80/mojFolder/ble.txt");
 
-        try {
-            URL adres_url = new URL("http://localhost/mojFolder/mojPlik.txt");
-            polaczenie = (HttpURLConnection) adres_url.openConnection();
-            polaczenie.connect();
-
-            InputStream strumien = polaczenie.getInputStream();
-
-            czytnik_strumienia = new BufferedReader(new InputStreamReader(strumien));
-
-            StringBuffer bufor = new StringBuffer();
-
-            String linijka = "";
-            while ((linijka = czytnik_strumienia.readLine()) != null) {
-                bufor.append(linijka);
-            }
-
-            text_wyswietl.setText("Wyświtlana zawartość to: " + bufor.toString());
-
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        } finally {
-            if (polaczenie != null) {
-                polaczenie.disconnect();
-            }
-            if (czytnik_strumienia != null) {
-                try {
-                    czytnik_strumienia.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
 
     }
 
 
-    public class JSONTask extends AsyncTask<URL, String, StringBuffer> {
+    public class JSONTask extends AsyncTask<String, String, String> {
 
         @Override
-        protected StringBuffer doInBackground(URL... params) {
+        protected String doInBackground(String... params) {
+
+            HttpURLConnection polaczenie = null;
+            BufferedReader czytnik_strumienia = null;
+
+            try {
+                URL adres_url = new URL(params[0]);
+                polaczenie = (HttpURLConnection) adres_url.openConnection();
+                polaczenie.connect();
+
+                InputStream strumien = polaczenie.getInputStream();
+
+                czytnik_strumienia = new BufferedReader(new InputStreamReader(strumien));
+
+                StringBuffer bufor = new StringBuffer();
+
+                String linijka = "";
+                while ((linijka = czytnik_strumienia.readLine()) != null) {
+                    bufor.append(linijka);
+                }
+
+                return bufor.toString();
+
+
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            } finally {
+                if (polaczenie != null) {
+                    polaczenie.disconnect();
+                }
+                if (czytnik_strumienia != null) {
+                    try {
+                        czytnik_strumienia.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
             return null;
         }
 
         @Override
-        protected void onPostExecute(StringBuffer stringBuffer) {
-            super.onPostExecute(stringBuffer);
+        protected void onPostExecute(String rezultat) {
+            super.onPostExecute(rezultat);
+            TextView text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
+            text_wyswietl.setText(rezultat);
         }
     }
 }
