@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">JSonPrzyklad</string>
+    <string name="action_odswierz">Odswierz</string>
 </resources>

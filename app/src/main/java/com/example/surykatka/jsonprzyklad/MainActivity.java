@@ -1,11 +1,28 @@
 package com.example.surykatka.jsonprzyklad;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import com.example.surykatka.jsonprzyklad.Modele.ModelSprzety;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,35 +31,79 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
 
-    private TextView text_wyswietl;
+
+private TextView text_wyswietl;
+private EditText wpisz_adres;
+private ListView lista;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button przycisk_wyswietl = (Button) findViewById(R.id.przycisk_wyswietl);
-        text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
+        // Create default options which will be used for every
+        //  displayImage(...) call if no options will be passed to this method
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+        .build();
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
+        .defaultDisplayImageOptions(defaultOptions)
+        .build();
+
+        ImageLoader.getInstance().init(config); // Do it on Application start
+
+      //  Button przycisk_wyswietl = (Button) findViewById(R.id.przycisk_wyswietl);
+        lista =(ListView) findViewById(R.id.lista_sprzetow);
+
+
+        //wpisz_adres.setText("192.168.2.103:80/mojFolder/mojPlik.txt");
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-    public void Przycisk_Wyswietl(View view) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
 
+        int id = item.getItemId();
 
-        new JSONTask().execute("http://10.0.2.15:80/mojFolder/ble.txt");
+        if (id == R.id.action_odswierz){
+            new JSONTask().execute("http://192.168.2.103:80/mojFolder/mojPlik.txt");
+            return true;
+        }
 
-
+        return super.onOptionsItemSelected(item);
     }
 
 
-    public class JSONTask extends AsyncTask<String, String, String> {
+    //public void Przycisk_Wyswietl(View view) {
+    //
+    //    wpisz_adres = (EditText) findViewById(R.id.ADRES);
+    //
+    //    String adres = wpisz_adres.getText().toString();
+    //
+    //   new JSONTask().execute("http://"+adres);
+    //
+    //
+    //}
+
+
+    public class JSONTask extends AsyncTask<String, String, List<ModelSprzety>> {
 
         @Override
-        protected String doInBackground(String... params) {
+        protected List<ModelSprzety> doInBackground(String... params) {
 
             HttpURLConnection polaczenie = null;
             BufferedReader czytnik_strumienia = null;
@@ -63,7 +124,42 @@ public class MainActivity extends Activity {
                     bufor.append(linijka);
                 }
 
-                return bufor.toString();
+
+                String finalJson = bufor.toString();
+
+
+
+                JSONObject jsonObject = new JSONObject(finalJson);
+                JSONArray jsonArray = jsonObject.getJSONArray("Sprzety");
+                //StringBuffer dane = new StringBuffer();
+
+                List<ModelSprzety> modelSprzetyList = new ArrayList<ModelSprzety>();
+
+                for (int i=0; i<jsonArray.length(); i++) {
+
+
+                    JSONObject jsonFinalObject = jsonArray.getJSONObject(i);
+                    ModelSprzety modelSprzety = new ModelSprzety();
+
+                    modelSprzety.setNazwa(jsonFinalObject.getString("Nazwa"));
+                    modelSprzety.setModel(jsonFinalObject.getString("Model"));
+                    modelSprzety.setProducent(jsonFinalObject.getString("Producent"));
+                    modelSprzety.setRok_prod(jsonFinalObject.getInt("Rok_prod"));
+                    modelSprzety.setFotka(jsonFinalObject.getString("foto"));
+                    modelSprzetyList.add(modelSprzety);
+
+
+                    //String nazwa_sprzetu = jsonFinalObject.getString("Nazwa");
+                    //int rok_prod = jsonFinalObject.getInt("Rok_prod");
+
+                    //dane.append(nazwa_sprzetu+" - "+rok_prod+"\n");
+
+                }
+
+                return modelSprzetyList;
+
+                //return dane.toString();
+               // return bufor.toString();
 
 
 
@@ -73,6 +169,8 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 e.printStackTrace();
 
+            } catch (JSONException e) {
+                e.printStackTrace();
             } finally {
                 if (polaczenie != null) {
                     polaczenie.disconnect();
@@ -90,12 +188,66 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        protected void onPostExecute(String rezultat) {
+        protected void onPostExecute(List<ModelSprzety> rezultat) {
             super.onPostExecute(rezultat);
-            TextView text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
-            text_wyswietl.setText(rezultat);
+            //TextView text_wyswietl = (TextView) findViewById(R.id.text_wyswietl);
+            //text_wyswietl.setText(rezultat);
+            SprzetyAdapter adapter = new SprzetyAdapter(getApplicationContext(), R.layout.element_listy, rezultat);
+            lista.setAdapter(adapter);
         }
     }
+
+    public class SprzetyAdapter extends ArrayAdapter{
+
+        private List<ModelSprzety> modelSprzetyList;
+        private int resource;
+        private LayoutInflater inflater;
+
+        public SprzetyAdapter(Context context, int resource, List<ModelSprzety> objects) {
+            super(context, resource,  objects);
+            modelSprzetyList = objects;
+            this.resource = resource;
+            inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+             if (convertView == null) {
+            convertView = inflater.inflate(resource, null);
+             }
+
+
+            TextView text_nazwa, text_model, text_producent, text_rok_prod;
+            ImageView zdjecie;
+
+            zdjecie = (ImageView)convertView.findViewById(R.id.imageView);
+
+            text_nazwa = (TextView) convertView.findViewById(R.id.text_nazwa);
+            text_model = (TextView) convertView.findViewById(R.id.text_model);
+            text_producent = (TextView) convertView.findViewById(R.id.text_producent);
+            text_rok_prod = (TextView) convertView.findViewById(R.id.text_rok_prod);
+
+            ImageLoader.getInstance().displayImage(modelSprzetyList.get(position).getFotka(), zdjecie);
+
+
+
+            text_nazwa.setText(modelSprzetyList.get(position).getNazwa());
+            text_model.setText(modelSprzetyList.get(position).getModel());
+            text_producent.setText(modelSprzetyList.get(position).getProducent());
+            text_rok_prod.setText(""+modelSprzetyList.get(position).getRok_prod());
+
+
+
+
+
+
+
+            return convertView;
+        }
+    }
+
 }
 
 
