@@ -4,7 +4,20 @@ package com.example.surykatka.jsonprzyklad.Modele;
  * Created by Surykatka on 2016-02-13.
  */
 public class ModelSprzety {
-    private String nazwa, model, producent, fotka;
+    private String nazwa;
+    private String model;
+    private String producent;
+    private String fotka;
+
+    public String getSerial_number() {
+        return serial_number;
+    }
+
+    public void setSerial_number(String serial_number) {
+        this.serial_number = serial_number;
+    }
+
+    private String serial_number;
     private int rok_prod;
 
 

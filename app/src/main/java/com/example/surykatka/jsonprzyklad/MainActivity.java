@@ -146,6 +146,7 @@ private ListView lista;
                     modelSprzety.setProducent(jsonFinalObject.getString("Producent"));
                     modelSprzety.setRok_prod(jsonFinalObject.getInt("Rok_prod"));
                     modelSprzety.setFotka(jsonFinalObject.getString("foto"));
+                    modelSprzety.setSerial_number(jsonFinalObject.getString("nr_fabr"));
                     modelSprzetyList.add(modelSprzety);
 
 
@@ -219,7 +220,7 @@ private ListView lista;
              }
 
 
-            TextView text_nazwa, text_model, text_producent, text_rok_prod;
+            TextView text_nazwa, text_model, text_producent, text_rok_prod, text_sn;
             ImageView zdjecie;
 
             zdjecie = (ImageView)convertView.findViewById(R.id.imageView);
@@ -228,15 +229,16 @@ private ListView lista;
             text_model = (TextView) convertView.findViewById(R.id.text_model);
             text_producent = (TextView) convertView.findViewById(R.id.text_producent);
             text_rok_prod = (TextView) convertView.findViewById(R.id.text_rok_prod);
+            text_sn = (TextView) convertView.findViewById(R.id.text_sn);
+
 
             ImageLoader.getInstance().displayImage(modelSprzetyList.get(position).getFotka(), zdjecie);
-
-
 
             text_nazwa.setText(modelSprzetyList.get(position).getNazwa());
             text_model.setText(modelSprzetyList.get(position).getModel());
             text_producent.setText(modelSprzetyList.get(position).getProducent());
             text_rok_prod.setText(""+modelSprzetyList.get(position).getRok_prod());
+            text_sn.setText(modelSprzetyList.get(position).getSerial_number());
 
 
 
